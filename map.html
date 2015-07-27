@@ -1,62 +1,120 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        #map-canvas {
+            width: 500px;
+            height: 400px;
+        }
+    </style>
 
-    <head>
-        <style type="text/css">
-         html, body, #map-canvas { height: 100%; margin: 10; padding: 100;}
+    <meta charset="UTF-8" />
+    <title>Hello React</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCosvnT21LfIGS79wNsvft-6domaAdHdOM">
+    </script>
+</head>
+<body>
+<div id="content"></div>
+<script type="text/jsx">
+    var map;
+    function initialize() {
+        var mapOptions = {
+            center: { lat: 4.188, lng: 21.093},
+            zoom: 4
+        };
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+                mapOptions);
 
-        </style>
-        <script type="text/javascript"
-                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCosvnT21LfIGS79wNsvft-6domaAdHdOM">
-        </script>
-        <script type="text/javascript">
-         function initialize() {
-             var mapOptions = {
-                 center: { lat: 4.188, lng: 21.093},
-                 zoom: 4,
-                 
-             };
-             var map = new google.maps.Map(document.getElementById('map-canvas'),
-                                           mapOptions);
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+    var MapLayout = React.createClass({
+
+        loadMarkersFromServer: function() {
+            $.ajax({
+                url: this.props.url,
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                    this.setState({data: data});
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(this.props.url, status, err.toString());
+                }.bind(this)
+            });
+        },
+        getInitialState: function() {
+            return {data: []};
+        },
+        componentDidMount: function() {
+            this.loadMarkersFromServer();
+            //setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+        },
+        render: function() {
+            return (
+                    <div className="mapLayout">
+                        <h1>July Studio</h1>
+                        <Map data={this.state.data} />
+                    </div>
+            );
+        }
+    });
 
 
-             var contentString = '<div id="content">'+
-                                 '<div id="siteNotice">'+
-                                 '</div>'+
-                                 '<h1 id="firstHeading" class="firstHeading">Test title</h1>'+
-                                 '<div id="bodyContent">'+
-                                 '<p><b>test text</b></p>'+
-                                 '<p><a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-                                 'test href</a> '+
-                                 '</p><p>test image -> <img src="img/icon/map-pointer.png" alt="img broken"></p>'+
-                                 '</div>'+
-                                 '</div>';
+    var Map = React.createClass({
+        render: function() {
+            function pinIt(title, lat, lng) {
 
-             var infowindow = new google.maps.InfoWindow({
-                 content: contentString
-             });
+                var contentString = '<div id="content">'+
+                        '<div id="siteNotice">'+
+                        '</div>'+
+                        '<h1 id="firstHeading" class="firstHeading">Test title</h1>'+
+                        '<div id="bodyContent">'+
+                        '<p><b>test text</b></p>'+
+                        '<p><a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
+                        'test href</a> '+
+                        '</p><p>test image -> <img src="img/icon/map-pointer.png" alt="img broken"></p>'+
+                        '</div>'+
+                        '</div>';
+                var infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
+                var image = 'img/icon/map-pointer.png'
+                var marker = new google.maps.Marker({
+                    position: { lat: lat, lng: lng},
+                    map: map,
+                    title: title,
+                    icon: image
+                });
+                google.maps.event.addListener(marker, 'click',
+                        function() {
+                            infowindow.open(map,marker);
+                        });
+            }
+            var createMarkers = this.props.data.map(function (markers) {
+                pinIt(markers.title, markers.lat, markers.lng);
+            });
+            return (
+                    <div className="map">
+                        Here should be a map.
+                    {createMarkers}
+                        <div id="map-canvas"></div>
+                    </div>
+            );
+        }
+    });
 
-             var image = 'img/icon/map-pointer.png'
-             var marker = new google.maps.Marker({
-                 position: { lat: 4.188, lng: 21.093},
-                 map: map,
-                 title: 'test',
-                 icon: image
-             });
-
-             google.maps.event.addListener(marker, 'click',
-                                           function() {
-                                               infowindow.open(map,marker);
-                                           });
-         }
-
-
-         google.maps.event.addDomListener(window, 'load', initialize);
-
-        </script>
-    </head>
-
-    <body>
-        <div id="map-canvas"></div>
-    </body>
+    React.render(
+            <MapLayout url="markers.json" />,
+            document.getElementById('content')
+    );
+</script>
+</body>
 </html>
+
