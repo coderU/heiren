@@ -1,0 +1,15 @@
+{
+  "DB": "dev",
+  "jwtSecret": "anythinghere",
+  "adminSecret": "blahblahblah",
+  "limit": 2,
+  "reset_time": "00 59 23 * * *",
+  "accessKey": "[AK]",
+  "secretKey": "[SK]",
+  "bucket": "[BucketName]",
+  "domain": "[BucketDomain]",
+  "mongo_host": "127.0.0.1",
+  "mongo_port": 27017,
+  "mongo_user": "jemit",
+  "mongo_password": "123456"
+}
