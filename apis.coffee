@@ -23,7 +23,7 @@ apis = ->
 
   # Add authentication
   router.use (expressJwt secret: jwtSecret
-      .unless path: ['/', '/users/register', '/api/login'])
+      .unless path: ['/', '/users/register', '/users/login'])
 
   # Add routers
   #router.use '/champion', champion
